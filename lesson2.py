@@ -6,47 +6,45 @@
 # данными, их открытие и считывание данных. В этой функции из считанных данных
 #  необходимо с помощью регулярных выражений извлечь значения параметров
 # «Изготовитель системы», «Название ОС», «Код продукта», «Тип системы».
-#--------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------
 
 import re
+from typing import List, Any
+
 
 def get_data(files):
+    templates = ['Изготовитель системы*:', 'Название ОС*:', 'Код продукта*:', 'Тип системы*:']
     for curr_file in files:
         with open(curr_file) as file_i:
             for line in file_i:
                 line = line.strip()
-                match=re.match('Изготовитель системы*:', line)
-                if match:
-                    print('Found "{}" in "{}"'.format('Изготовитель системы:', line))
-                    text_pos=match.span()
-                    print(line[match.end():].strip())
-# for f in files:
-#     with open(f) as f_i:
-#         data = [line.strip() for line in f_i]
-# print(data)
-os_prod_list=[]
-os_name_list=[]
-os_code_list=[]
-os_type_list=[]
-main_data=[]
-input_files=['info_1.txt','info_2.txt','info_3.txt']
-get_data(input_files)
-# stfile = open("info_1.txt")
-# stfile_content=stfile.read().splitlines()
-# params=['Изготовитель системы','Название ОС','Код продукта','Тип системы']
-#print(stfile)
-#print(stfile_content)
-# for s in stfile_content:
-#     for p in params:
-#         q=re.match(p,s)
-#         if q:
-#             print(s.replace(p,'').strip())
-        #    print(re.split(p,s,1))
-        # r=re.split(p,s,1)
-        # if r:
-        #     print(r)
+                for template in templates:
+                    match = re.match(template, line)
+                    if match:
+                        if template == templates[0]:
+                            os_prod_list.append(line[match.end():].strip())
+                            main_data['Изготовитель системы'].append(line[match.end():].strip())
+                        if template == templates[1]:
+                            os_name_list.append(line[match.end():].strip())
+                            main_data['Название ОС'].append(line[match.end():].strip())
+                        if template == templates[2]:
+                            os_code_list.append(line[match.end():].strip())
+                            main_data['Код продукта'].append(line[match.end():].strip())
+                        if template == templates[3]:
+                            os_type_list.append(line[match.end():].strip())
+                            main_data['Тип системы'].append(line[match.end():].strip())
 
-#--------------------------------------------------------------------------------
+
+os_prod_list: List[Any] = []
+os_name_list: List[Any] = []
+os_code_list: List[Any] = []
+os_type_list = []
+main_data = ['Изготовитель системы', 'Название ОС', 'Код продукта', 'Тип системы']
+input_files = ['info_1.txt', 'info_2.txt', 'info_3.txt']
+get_data(input_files)
+print(os_prod_list, '\n', os_name_list, '\n', os_code_list, '\n', os_type_list, '\n')
+
+# --------------------------------------------------------------------------------
 # Значения каждого параметра поместить в
 # соответствующий список. Должно получиться четыре списка — например,
 # os_prod_list, os_name_list, os_code_list, os_type_list. В этой же функции
