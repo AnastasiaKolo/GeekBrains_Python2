@@ -7,22 +7,40 @@
 #  необходимо с помощью регулярных выражений извлечь значения параметров
 # «Изготовитель системы», «Название ОС», «Код продукта», «Тип системы».
 #--------------------------------------------------------------------------------
-# files=['info_1.txt','info_2.txt','info_3.txt']
+
+import re
+
+def get_data(files):
+    for curr_file in files:
+        with open(curr_file) as file_i:
+            for line in file_i:
+                line = line.strip()
+                match=re.match('Изготовитель системы*:', line)
+                if match:
+                    print('Found "{}" in "{}"'.format('Изготовитель системы:', line))
+                    text_pos=match.span()
+                    print(line[match.end():].strip())
 # for f in files:
 #     with open(f) as f_i:
 #         data = [line.strip() for line in f_i]
 # print(data)
-import re
-stfile = open("info_1.txt")
-stfile_content=stfile.read().splitlines()
-params=['Изготовитель системы','Название ОС','Код продукта','Тип системы']
+os_prod_list=[]
+os_name_list=[]
+os_code_list=[]
+os_type_list=[]
+main_data=[]
+input_files=['info_1.txt','info_2.txt','info_3.txt']
+get_data(input_files)
+# stfile = open("info_1.txt")
+# stfile_content=stfile.read().splitlines()
+# params=['Изготовитель системы','Название ОС','Код продукта','Тип системы']
 #print(stfile)
 #print(stfile_content)
-for s in stfile_content:
-    for p in params:
-        q=re.match(p,s)
-        if q:
-            print(s.replace(p,'').strip())
+# for s in stfile_content:
+#     for p in params:
+#         q=re.match(p,s)
+#         if q:
+#             print(s.replace(p,'').strip())
         #    print(re.split(p,s,1))
         # r=re.split(p,s,1)
         # if r:
@@ -38,7 +56,7 @@ for s in stfile_content:
 # также оформить в виде списка и поместить в файл main_data (также для
 # каждого файла);
 # Создать функцию write_to_csv(), в которую передавать ссылку на CSV-файл.
-# В этой функции реализовать получение# данных через вызов функции get_data(),
+# В этой функции реализовать получение данных через вызов функции get_data(),
 # а также сохранение подготовленных данных в соответствующий CSV-файл;
 # Проверить работу программы через вызов функции write_to_csv(). ###
 
