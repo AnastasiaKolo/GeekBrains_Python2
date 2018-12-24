@@ -59,7 +59,6 @@ def write_to_csv(new_csv_file: object):
         file_writer.writerow(row)
 
 
-
 os_prod_list: List[Any] = []
 os_name_list: List[Any] = []
 os_code_list: List[Any] = []

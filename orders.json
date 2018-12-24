@@ -4,31 +4,8 @@
     "price": 124,
     "buyer": "Jane",
     "date": "25.10.2018"
-}{
-    "item": "table",
-    "quantity": 2,
-    "price": 2099,
-    "buyer": "Mark",
-    "date": "16.10.2018"
-}{
-    "item": "fork",
-    "quantity": 5,
-    "price": 124,
-    "buyer": "Jane",
-    "date": "25.10.2018"
-}{
-    "item": "table",
-    "quantity": 2,
-    "price": 2099,
-    "buyer": "Mark",
-    "date": "16.10.2018"
-}{
-    "item": "fork",
-    "quantity": 5,
-    "price": 124,
-    "buyer": "Jane",
-    "date": "25.10.2018"
-}{
+}
+{
     "item": "table",
     "quantity": 2,
     "price": 2099,
