@@ -17,12 +17,12 @@ import yaml
 
 key_1 = ['Africa', 'Asia', 'Antarktida', 'America']
 key_2 = 1234
-key_3 = {'a': 1, 'b': 2}
-#     'a': '€',
-#     'b': 'Æ',
-#     'c': 'ɷ'
-# }
-data_to_yaml = {key_1, key_2, key_3}
+key_3 = {
+    'a': '€',
+    'b': 'Æ',
+    'c': 'ɷ'
+}
+data_to_yaml = {'key_1': key_1, 'key_2': key_2, 'key3': key_3}
 
-print(yaml.dump(data_to_yaml, allow_unicode=True))
+print(yaml.dump(data_to_yaml, allow_unicode=True, default_flow_style=False))
 
