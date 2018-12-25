@@ -23,17 +23,16 @@ key_3 = {
     'c': 'ɷ'
 }
 data_to_yaml = {'key_1': key_1, 'key_2': key_2, 'key3': key_3}
-str=yaml.dump(data_to_yaml, allow_unicode=True, default_flow_style=False)
-# print(str)
+yaml_str = yaml.dump(data_to_yaml, allow_unicode=True, default_flow_style=False)
+# print(yaml_str)
 # пишем строку в файл file.yaml
 with open('file.yaml', 'w', encoding="UTF-8") as f_n:
-    f_n.write(str)
+    f_n.write(yaml_str)
 # читаем из файла
 with open('file.yaml', 'r', encoding="UTF-8") as f_r:
-    data_from_yaml=yaml.load(f_r)
+    data_from_yaml = yaml.load(f_r)
 print("Read from file: ", data_from_yaml)
-if data_from_yaml==data_to_yaml:
+if data_from_yaml == data_to_yaml:
     print("Equal")
 else:
     print("Different")
-
