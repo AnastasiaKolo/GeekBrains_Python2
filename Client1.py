@@ -39,13 +39,13 @@ except ConnectionRefusedError:
     print("Сервер %s недоступен по порту %s" % (host, port))
 msg = 'Привет, сервер'
 s.send(msg.encode('utf-8'))
-data = s.recv(1000000)
+data = s.recv(1024)
 print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
 # в цикле
 for i in range(5):
     msg = 'Попытка ' + str(i)
     s.send(msg.encode('utf-8'))
-    data = s.recv(1000000)
+    data = s.recv(1024)
     print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
     time.sleep(i)
 s.close()
