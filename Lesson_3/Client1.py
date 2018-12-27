@@ -19,6 +19,24 @@ import time
 import argparse
 import json
 
+
+def presence():  # сформировать presence-сообщение;
+    pass
+
+
+def send_message():  # отправить сообщение серверу;
+    pass
+
+
+def get_response():  # получить ответ сервера;
+    pass
+
+
+def parse_message():  # разобрать сообщение сервера;
+    pass
+
+
+# получить и обработать параметры командной строки
 def parse_args():
     parser = argparse.ArgumentParser(description='Client App')
     parser.add_argument("-a", action="store", dest="addr", type=str, default='localhost',
@@ -28,24 +46,30 @@ def parse_args():
     return parser.parse_args()
 
 
-args = parse_args()
-port = args.port
-host = args.addr
-print("Попытка соединения с %s по порту %s" % (host, port))
-s = socket(AF_INET, SOCK_STREAM)
-try:
-    s.connect((host, port))
-except ConnectionRefusedError:
-    print("Сервер %s недоступен по порту %s" % (host, port))
-msg = 'Привет, сервер'
-s.send(msg.encode('utf-8'))
-data = s.recv(1024)
-print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
-# в цикле
-for i in range(5):
-    msg = 'Попытка ' + str(i)
+def main():
+    args = parse_args()
+    port = args.port
+    host = args.addr
+    print("Попытка соединения с %s по порту %s" % (host, port))
+    s = socket(AF_INET, SOCK_STREAM)
+    try:
+        s.connect((host, port))
+    except ConnectionRefusedError:
+        print("Сервер %s недоступен по порту %s" % (host, port))
+    msg = 'Привет, сервер'
     s.send(msg.encode('utf-8'))
     data = s.recv(1024)
     print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
-    time.sleep(i)
-s.close()
+    # в цикле
+    for i in range(5):
+        msg = 'Попытка ' + str(i)
+        s.send(msg.encode('utf-8'))
+        data = s.recv(1024)
+        print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
+        time.sleep(i)
+    s.close()
+
+
+# Entry point
+if __name__ == '__main__':
+    main()

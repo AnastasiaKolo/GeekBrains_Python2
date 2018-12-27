@@ -14,13 +14,15 @@ import time
 import json
 import argparse
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Server App')
     parser.add_argument("-p", action="store", dest="port", type=int, default=7777,
                         help="enter port number, default is 7777")
-    parser.add_argument("-a", action="store", dest="addr", type=str, default='*',
-                        help="enter IP address, default is *")
+    parser.add_argument("-a", action="store", dest="addr", type=str, default='0.0.0.0',
+                        help="enter IP address, default is 0.0.0.0")
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
@@ -35,10 +37,9 @@ def main():
         while True:
             data = client.recv(1024)
             print("Сообщение", data.decode('utf-8'), ", было отправлено клиентом: %s" % str(addr))
-            msg = "Время "+ time.ctime(time.time())
+            msg = "Время " + time.ctime(time.time())
             client.send(msg.encode('utf-8'))
         client.close()
-
 
 
 # Entry point
