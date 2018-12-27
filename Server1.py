@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 # Функции сервера:
 # принимает сообщение клиента;
 # формирует ответ клиенту;
@@ -14,14 +15,15 @@ import json
 
 port = 7777
 s = socket(AF_INET, SOCK_STREAM)
-s.bind(('' , port))
-s.listen( 5 )
+s.bind(('', port))
+s.listen(5)
 
 while True:
     client, addr = s.accept()
     print("Получен запрос на соединение от %s" % str(addr))
-    data = client.recv(1000000)
-    print("Сообщение", data.decode('utf-8'), ", было отправлено клиентом: %s" % str(addr))
-    msg = "Привет ! Время "+ time.ctime(time.time())
-    client.send(msg.encode('utf-8'))
+    while True:
+        data = client.recv(1000000)
+        print("Сообщение", data.decode('utf-8'), ", было отправлено клиентом: %s" % str(addr))
+        msg = "Привет ! Время "+ time.ctime(time.time())
+        client.send(msg.encode('utf-8'))
     client.close()

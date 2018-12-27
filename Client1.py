@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 # 1. Реализовать простое клиент-серверное взаимодействие
 # по протоколу JIM (JSON instant messaging):
 # клиент отправляет запрос серверу;
@@ -15,6 +16,8 @@
 
 from socket import *
 import time
+import argparse
+import json
 
 port = 7777
 host = 'localhost'
@@ -27,13 +30,9 @@ msg = 'Привет, сервер'
 s.send(msg.encode('utf-8'))
 data = s.recv(1000000)
 print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
-msg = 'ЙЦУКЕНГШЩЩ'
-s.send(msg.encode('utf-8'))
-data = s.recv(1000000)
-print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
-
 # в цикле
 for i in range(5):
+    msg = 'Попытка ' + str(i)
     s.send(msg.encode('utf-8'))
     data = s.recv(1000000)
     print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
