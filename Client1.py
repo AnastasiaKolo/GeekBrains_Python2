@@ -19,8 +19,19 @@ import time
 import argparse
 import json
 
-port = 7777
-host = 'localhost'
+def parse_args():
+    parser = argparse.ArgumentParser(description='Client App')
+    parser.add_argument("-a", action="store", dest="addr", type=str, default='localhost',
+                        help="enter IP address, default is localhost")
+    parser.add_argument("-p", action="store", dest="port", type=int, default=7777,
+                        help="enter port number, default is 7777")
+    return parser.parse_args()
+
+
+args = parse_args()
+port = args.port
+host = args.addr
+print("Попытка соединения с %s по порту %s" % (host, port))
 s = socket(AF_INET, SOCK_STREAM)
 try:
     s.connect((host, port))
