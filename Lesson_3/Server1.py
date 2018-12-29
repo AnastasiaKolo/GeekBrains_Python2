@@ -15,6 +15,46 @@ import json
 import argparse
 
 
+def server_response(client_msg, client):
+    json_resp = {}
+    if client_msg["action"] == 'presence':
+        json_resp = {
+            "response": 200,
+            "time": time.time(),
+            "alert": "Подтрерждаю"
+        }
+    elif client_msg["action"] == 'msg':
+        json_resp = {
+            "response": 200,
+            "time": time.time(),
+            "alert": "Сообщение отправлено пользователю " + client_msg["to"]
+        }
+    msg = json.dumps(json_resp)
+    client.send(msg.encode('utf-8'))
+    client.close()
+
+
+def recv_message(client, addr):
+    data = client.recv(1024)
+    print("Сообщение", data.decode('utf-8'), ", было отправлено клиентом: %s" % str(addr))
+    json_mess = {}
+    try:
+        json_mess = json.loads(data.decode('utf-8'))
+        print("Сообщение",
+              "Action",  json_mess["action"],
+              ' длиной ', len(data), ' байт')
+    except json.decoder.JSONDecodeError:
+        print("Сообщение от клиента не распознано", data)
+    return json_mess
+
+
+def server_communicate(s: socket):
+    client, addr = s.accept()
+    print("Получен запрос на соединение от %s" % str(addr))
+    msg_from_client = recv_message(client, addr)
+    server_response(msg_from_client, client)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Server App')
     parser.add_argument("-p", action="store", dest="port", type=int, default=7777,
@@ -32,14 +72,7 @@ def main():
     s.listen(5)
     print("Запущено прослушивание порта %s" % str(port))
     while True:
-        client, addr = s.accept()
-        print("Получен запрос на соединение от %s" % str(addr))
-        while True:
-            data = client.recv(1024)
-            print("Сообщение", data.decode('utf-8'), ", было отправлено клиентом: %s" % str(addr))
-            msg = "Время " + time.ctime(time.time())
-            client.send(msg.encode('utf-8'))
-        client.close()
+        server_communicate(s)
 
 
 # Entry point

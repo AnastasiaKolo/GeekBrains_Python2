@@ -20,20 +20,61 @@ import argparse
 import json
 
 
-def presence():  # сформировать presence-сообщение;
-    pass
+def parse_message(str1):  # разобрать сообщение сервера;
+    serv_message = {}
+    try:
+        serv_message = json.loads(str1.decode('utf-8'))
+        if serv_message["response"] in (100, 101, 102, 200, 201, 202):
+            print("Сообщение доставлено на сервер, код возврата ", serv_message["response"], serv_message["alert"])
+    except json.decoder.JSONDecodeError:
+        print("Сообщение от сервера не распознано", str1)
 
 
-def send_message():  # отправить сообщение серверу;
-    pass
+def presence(username, status):  # сформировать presence-сообщение;
+    return {
+        "action": "presence",
+        "time": time.time(),
+        "type": "status",
+        "user": {
+            "account_name": username,
+            "status": status
+        }
+    }
 
 
-def get_response():  # получить ответ сервера;
-    pass
+def message_from_user(from_user):  # сформировать presence-сообщение;
+    to_user = input("Кому отправить сообщение:")
+    msg = input("Введите сообщение:")
+    return {
+        "action": "msg",
+        "time": time.time(),
+        "to": to_user,
+        "from": from_user,
+        "encoding": "utf-8",
+        "message": msg
+    }
 
 
-def parse_message():  # разобрать сообщение сервера;
-    pass
+def send_message(msg, s):  # отправить сообщение серверу;
+    print("Sending message %s" % msg)
+    s.send(msg.encode('utf-8'))
+
+
+def get_response(s):  # получить ответ сервера;
+    data = s.recv(1024)
+    parse_message(data)
+
+
+def communicate(msg, resp, host, port):
+    print("Попытка соединения с %s по порту %s" % (host, port))
+    my_socket = socket(AF_INET, SOCK_STREAM)
+    try:
+        my_socket.connect((host, port))
+    except ConnectionRefusedError:
+        print("Сервер %s недоступен по порту %s" % (host, port))
+    send_message(msg, my_socket)
+    resp = get_response(my_socket)
+    my_socket.close()
 
 
 # получить и обработать параметры командной строки
@@ -50,24 +91,11 @@ def main():
     args = parse_args()
     port = args.port
     host = args.addr
-    print("Попытка соединения с %s по порту %s" % (host, port))
-    s = socket(AF_INET, SOCK_STREAM)
-    try:
-        s.connect((host, port))
-    except ConnectionRefusedError:
-        print("Сервер %s недоступен по порту %s" % (host, port))
-    msg = 'Привет, сервер'
-    s.send(msg.encode('utf-8'))
-    data = s.recv(1024)
-    print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
-    # в цикле
-    for i in range(5):
-        msg = 'Попытка ' + str(i)
-        s.send(msg.encode('utf-8'))
-        data = s.recv(1024)
-        print("Сообщение от сервера: ", data.decode('utf-8'), ' длиной ', len(data), ' байт')
-        time.sleep(i)
-    s.close()
+    resp = ''
+    msg = json.dumps(presence("Nastya", "Yep, I am here!"))
+    communicate(msg, resp, host, port)
+    msg = json.dumps(message_from_user("Nastya"))
+    communicate(msg, resp, host, port)
 
 
 # Entry point
