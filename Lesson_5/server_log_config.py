@@ -11,10 +11,42 @@
 # -  Журналирование обработки исключений try/except. Вместо функции print() использовать журналирование и
 #    обеспечить вывод служебных сообщений в лог-файл;
 # -  Журналирование функций, исполняемых на серверной и клиентской сторонах при работе мессенджера.
-import logging
 
-logging.basicConfig(
-    filename = "server.log",
-    format = "%(levelname)-10s %(asctime)s %(message)s",
-    level = logging.INFO
-)
+import logging
+import logging.handlers
+import sys
+
+
+# Создать регистратор верхнего уровня с именем 'server'
+serv_log = logging.getLogger('server')
+# Формат сообщений <дата-время> <уровень_важности> <имя_модуля> <сообщение>
+_format = logging.Formatter("%(asctime)s %(levelname)-10s %(module)s: %(message)s")
+
+# # Создать обработчик, который выводит сообщения с уровнем
+# # CRITICAL в поток stderr
+crit_hand = logging.StreamHandler(sys.stderr)
+crit_hand.setLevel(logging.CRITICAL)
+crit_hand.setFormatter(_format)
+
+# Создать обработчик, который выводит сообщения в файл
+applog_hand = logging.handlers.TimedRotatingFileHandler('server.log', when='m', interval=5, encoding='utf-8', backupCount=10)
+applog_hand.setFormatter(_format)
+applog_hand.setLevel(logging.DEBUG)
+
+# Добавить несколько обработчиков в регистратор 'server'
+serv_log.addHandler(applog_hand)
+serv_log.addHandler(crit_hand)
+serv_log.setLevel(logging.DEBUG)
+
+if __name__ == '__main__':
+    # Создаем потоковый обработчик логирования (по умолчанию sys.stderr):
+    console = logging.StreamHandler(sys.stderr)
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(_format)
+    serv_log.addHandler(console)
+    serv_log.info('Тестовый запуск логирования')
+    serv_log.critical('critical!')
+    serv_log.error('error!')
+    serv_log.warning('warning!')
+    serv_log.info('info!')
+    serv_log.debug('debug!')

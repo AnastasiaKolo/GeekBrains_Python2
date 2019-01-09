@@ -27,7 +27,7 @@ def parse_message(str1):  # разобрать сообщение сервера
     try:
         serv_message = json.loads(str1.decode('utf-8'))
         if serv_message["response"] in (100, 101, 102, 200, 201, 202):
-            cli_log.info("Сообщение доставлено на сервер, код возврата %s, %s " % (serv_message["response"], serv_message["alert"]))
+            cli_log.info("Сообщение доставлено на сервер, код возврата %s, %s " % (str(serv_message["response"]), serv_message["alert"]))
     except json.decoder.JSONDecodeError:
         cli_log.critical("Сообщение от сервера не распознано: %s ", str1)
 
@@ -45,8 +45,16 @@ def presence(username, status):  # сформировать presence-сообщ�
 
 
 def message_from_user(from_user):  # сформировать presence-сообщение;
-    to_user = input("Кому отправить сообщение:")
-    msg = input("Введите сообщение:")
+    to_user=""
+    while (len(to_user) == 0) or (len(to_user) > 25):
+        to_user = input("Кому отправить сообщение:")
+        if (len(to_user) == 0) or (len(to_user) > 25):
+            print("имя пользователя/название чата должно содержать от 1 до 25 символов")
+    msg = ""
+    while (len(msg) == 0) or (len(msg) > 500):
+        msg = input("Введите сообщение:")
+        if (len(msg) == 0) or (len(msg) > 500):
+            print("сообщение должно содержать максимум 500 символов")
     return {
         "action": "msg",
         "time": time.time(),
@@ -74,10 +82,10 @@ def communicate(msg, resp, host, port):
         my_socket.connect((host, port))
     except ConnectionRefusedError:
         cli_log.critical("Сервер %s недоступен по порту %s" % (host, port))
-        exit(1)
+        return
     except OSError as err:
         cli_log.critical("OS error: {0}".format(err))
-        exit(1)
+        return
     else:
         cli_log.info("Подключен к %s по порту %s" % (host, port))
     send_message(msg, my_socket)
