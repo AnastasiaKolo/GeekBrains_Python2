@@ -21,6 +21,7 @@ import server_log_config
 
 serv_log = logging.getLogger('server')
 
+
 def server_response(client_msg, client):
     json_resp = {}
     if client_msg["action"] == 'presence':
@@ -47,7 +48,7 @@ def recv_message(client, addr):
     try:
         json_mess = json.loads(data.decode('utf-8'))
         serv_log.info("Сообщение: Action=%s длиной %s байт" % (str(json_mess["action"]),
-              str(len(data))))
+                                                               str(len(data))))
     except json.decoder.JSONDecodeError:
         serv_log.critical("Сообщение от клиента не распознано %s" % data.decode('utf-8'))
     return json_mess

@@ -13,7 +13,15 @@
 # -  Журналирование функций, исполняемых на серверной и клиентской сторонах при работе мессенджера.
 import logging
 import sys
+import os
 
+# В директории проекта создать каталог log, в него пишем лог клиента
+curr_dir = os.path.dirname(os.path.realpath(__file__))
+log_dir = os.path.join(curr_dir, 'log')
+if not os.path.exists(log_dir):
+    os.mkdir(log_dir)
+logging_file = os.path.join(log_dir, 'client.log')
+print("Логирование настроено в %s" % logging_file)
 
 # Создать регистратор верхнего уровня с именем 'client'
 cli_log = logging.getLogger('client')
@@ -27,7 +35,7 @@ crit_hand.setLevel(logging.CRITICAL)
 crit_hand.setFormatter(_format)
 
 # Создать обработчик, который выводит сообщения в файл
-applog_hand = logging.FileHandler('client.log', encoding='utf-8')
+applog_hand = logging.FileHandler(logging_file, encoding='utf-8')
 applog_hand.setFormatter(_format)
 applog_hand.setLevel(logging.DEBUG)
 

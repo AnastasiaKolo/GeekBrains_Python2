@@ -22,12 +22,14 @@ import client_log_config
 
 cli_log = logging.getLogger('client')
 
+
 def parse_message(str1):  # разобрать сообщение сервера;
     serv_message = {}
     try:
         serv_message = json.loads(str1.decode('utf-8'))
         if serv_message["response"] in (100, 101, 102, 200, 201, 202):
-            cli_log.info("Сообщение доставлено на сервер, код возврата %s, %s " % (str(serv_message["response"]), serv_message["alert"]))
+            cli_log.info("Сообщение доставлено на сервер, код возврата %s, %s " % (
+            str(serv_message["response"]), serv_message["alert"]))
     except json.decoder.JSONDecodeError:
         cli_log.critical("Сообщение от сервера не распознано: %s ", str1)
 
@@ -45,7 +47,7 @@ def presence(username, status):  # сформировать presence-сообщ�
 
 
 def message_from_user(from_user):  # сформировать presence-сообщение;
-    to_user=""
+    to_user = ""
     while (len(to_user) == 0) or (len(to_user) > 25):
         to_user = input("Кому отправить сообщение:")
         if (len(to_user) == 0) or (len(to_user) > 25):
