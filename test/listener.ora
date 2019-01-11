@@ -1,0 +1,27 @@
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = sib-air-db01.megafon.ru)(PORT = 1521))
+    )
+  )
+
+SID_LIST_LISTENER=
+  (SID_LIST=
+    (SID_DESC=
+         (GLOBAL_DBNAME=sib_gfair.megafon.ru)
+         (   SID_NAME=   gfair
+         )
+         (
+         ORACLE_HOME=/u01/app/oracle/product/12.1.0/dbhome_2   )
+        )
+    (SID_DESC=
+         (GLOBAL_DBNAME=wfair.megafon.ru)
+         (   SID_NAME=wfair   )
+         (   ORACLE_HOME=/u01/app/oracle/product/12.1.0/dbhome_wf  )
+        )
+   ( SID_DESC = (   SID_NAME  = ww1w  ))
+    ( Sid_desc=( SId_NAME   = xxx1))
+    )
+
+ADR_BASE_LISTENER = /u02
+
