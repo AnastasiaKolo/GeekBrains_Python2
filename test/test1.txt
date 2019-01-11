@@ -1,0 +1,6 @@
+arg = GGGG
+(KEY1= val1)
+   (KEY2   = val2)
+file1.txt
+file2.css
+file3.php
