@@ -9,6 +9,7 @@ def log(func):
         with open('config.json') as f_n:
             print("reading config")
             conf = json.load(f_n)
+            f_n.close()
     except: #EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
         conf = {"trace": False}
     enable_tracing = conf["trace"]
@@ -31,8 +32,10 @@ if __name__ == '__main__':
     conf = {"trace": True}
     with open('config.json', 'w') as c_j:
         c_j.write(json.dumps(conf, indent=4))
+        c_j.close()
     print(sqr(9))
     conf = {"trace": False}
     with open('config.json', 'w') as c_j:
         c_j.write(json.dumps(conf, indent=4))
+        c_j.close()
     print(sqr(3))
