@@ -9,7 +9,7 @@
 
 
 from socket import *
-import select
+from threading import Thread
 import time
 import argparse
 import json
@@ -44,6 +44,11 @@ def parse_message(str1):  # разобрать сообщение сервера
             return serv_message
     except json.decoder.JSONDecodeError:
         cli_log.critical("Сообщение от сервера не распознано: %s ", str1)
+        return {
+            "response": 400,
+            "time": time.time(),
+            "alert": "Сообщение от сервера не распознано"
+        }
 
 
 @log
@@ -59,17 +64,17 @@ def presence(username, status):  # сформировать presence-сообщ�
     }
 
 @log
-def message_from_user(from_user):  # сформировать сообщение;
-    to_user = ""
-    while (len(to_user) == 0) or (len(to_user) > 25):
-        to_user = input("Кому отправить сообщение:")
-        if (len(to_user) == 0) or (len(to_user) > 25):
-            print("имя пользователя/название чата должно содержать от 1 до 25 символов")
-    msg = ""
-    while (len(msg) == 0) or (len(msg) > 500):
-        msg = input("Введите сообщение:")
-        if (len(msg) == 0) or (len(msg) > 500):
-            print("сообщение должно содержать максимум 500 символов")
+def message_to_user(from_user, to_user, msg):  # сформировать сообщение;
+    # to_user = ""
+    # while (len(to_user) == 0) or (len(to_user) > 25):
+    #     to_user = input("Кому отправить сообщение:")
+    #     if (len(to_user) == 0) or (len(to_user) > 25):
+    #         print("имя пользователя/название чата должно содержать от 1 до 25 символов")
+    # msg = ""
+    # while (len(msg) == 0) or (len(msg) > 500):
+    #     msg = input("Введите сообщение:")
+    #     if (len(msg) == 0) or (len(msg) > 500):
+    #         print("сообщение должно содержать максимум 500 символов")
     return {
         "action": "msg",
         "time": time.time(),
@@ -83,16 +88,40 @@ def message_chat(from_user, msg):  # сформировать сообщение
     return {
         "action": "msg",
         "time": time.time(),
-        "to": "ALL",
+        "to": "ALL",  # вообще-то здесь указывается room name,
+                      # пока упрощенный чат в котором участвуют все подключенные
         "from": from_user,
         "encoding": "utf-8",
         "message": msg
     }
 
+def join_chat(from_user, room_name):  # Присоединиться к чату
+    return {
+        "action": "join",
+        "time": time.time(),
+        "from": from_user,
+        "room": room_name
+    }
+
+def leave_chat(from_user, room_name): # Покинуть чат
+    return {
+        "action": "leave",
+        "time": time.time(),
+        "from": from_user,
+        "room": room_name
+    }
 
 
+def read_server_messages(sock):
+    while True:  # дальше в цикле получаем сообщения
+        data = sock.recv(1024).decode('utf-8')
+        server_resp = {}
+        server_resp = parse_message(data)
+        print(server_resp["alert"])
 
-def client_loop(host, port):
+
+def client_loop(host, port):  # отправляет сообщения в чат
+                              # и читает из него в отдельном потоке
     # Начиная с Python 3.2 сокеты имеют протокол менеджера контекста
     # При выходе из оператора with сокет будет авторматически закрыт
     with socket(AF_INET, SOCK_STREAM) as sock: # Создать сокет TCP
@@ -115,15 +144,18 @@ def client_loop(host, port):
         data = sock.recv(1024).decode('utf-8') # Получить ответ на него
         server_resp = parse_message(data)
         print(server_resp["alert"])
-        while True:    # дальше в цикле отправляем и получаем сообщения
+        # запускаем поток вычитывания серверных сообщений
+        receiver = read_server_messages(sock)
+        th_sender = Thread(target=receiver)
+        th_sender.daemon = True
+        th_sender.start()
+
+        while True:    # дальше в цикле отправляем сообщения
             msg = input('Ваше сообщение: ')
             if msg == 'exit':
                 break
             msg = json.dumps(message_chat(username, msg))
             sock.send(msg.encode('utf-8'))     # Отправить!
-            data = sock.recv(1024).decode('utf-8')
-            server_resp = parse_message(data)
-            print(server_resp["alert"])
 
 
 # получить и обработать параметры командной строки
