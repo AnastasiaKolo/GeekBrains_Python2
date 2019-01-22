@@ -56,7 +56,7 @@ def server_response(incoming_msg):
         json_resp = {
             "response": 200,
             "time": time.time(),
-            "alert": "Подтверждаю"
+            "alert": "Соединение установлено"
         }
         print("%s вошел в чат" % client_msg["user"]["account_name"])
     elif client_msg["action"] == 'msg':
