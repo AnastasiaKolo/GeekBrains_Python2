@@ -9,6 +9,7 @@
 
 
 from socket import *
+import select
 import time
 import json
 import argparse
@@ -18,43 +19,38 @@ import server_log_config
 serv_log = logging.getLogger('server')
 
 
+# def recv_message(client, addr):
+#     data = client.recv(1024)
+#     serv_log.info("Сообщение %s было отправлено клиентом: %s" % (data.decode('utf-8'), str(addr)))
+#     json_mess = {}
+#     try:
+#         json_mess = json.loads(data.decode('utf-8'))
+#         serv_log.info("Сообщение: Action=%s длиной %s байт" % (str(json_mess["action"]),
+#                                                                str(len(data))))
+#     except json.decoder.JSONDecodeError:
+#         serv_log.critical("Сообщение от клиента не распознано %s" % data.decode('utf-8'))
+#     return json_mess
 
 
-
-def recv_message(client, addr):
-    data = client.recv(1024)
-    serv_log.info("Сообщение %s было отправлено клиентом: %s" % (data.decode('utf-8'), str(addr)))
-    json_mess = {}
-    try:
-        json_mess = json.loads(data.decode('utf-8'))
-        serv_log.info("Сообщение: Action=%s длиной %s байт" % (str(json_mess["action"]),
-                                                               str(len(data))))
-    except json.decoder.JSONDecodeError:
-        serv_log.critical("Сообщение от клиента не распознано %s" % data.decode('utf-8'))
-    return json_mess
-
-
-def server_communicate(s: socket):
-    client, addr = s.accept()
-    serv_log.info("Получен запрос на соединение от %s" % str(addr))
-    msg_from_client = recv_message(client, addr)
-    server_response(msg_from_client, client)
+# def server_communicate(s: socket):
+#     client, addr = s.accept()
+#     serv_log.info("Получен запрос на соединение от %s" % str(addr))
+#     msg_from_client = recv_message(client, addr)
+#     server_response(msg_from_client, client)
 
 
 def server_response(incoming_msg):
     # парсим сообщение клиента и формируем ответ сервера
-    # ответ сервера будет выслан всем
     # ответ вида:
     # presense = клиент ... вошел в чат
     # msg = сообщение от клиента ...
+    client_msg={}
     try:
-        client_msg = json.loads(incoming_msg.decode('utf-8'))
+        client_msg = json.loads(incoming_msg)
         serv_log.info("Сообщение: Action=%s длиной %s байт" % (str(client_msg["action"]),
                                                                str(len(incoming_msg))))
     except json.decoder.JSONDecodeError:
-        serv_log.critical("Сообщение от клиента не распознано %s" % incoming_msg.decode('utf-8'))
-
-
+        serv_log.critical("Сообщение от клиента не распознано %s" % incoming_msg)
     json_resp = {}
     if client_msg["action"] == 'presence':
         json_resp = {
@@ -62,43 +58,46 @@ def server_response(incoming_msg):
             "time": time.time(),
             "alert": "Подтверждаю"
         }
+        print("%s вошел в чат" % client_msg["user"]["account_name"])
     elif client_msg["action"] == 'msg':
         json_resp = {
             "response": 200,
             "time": time.time(),
             "alert": "Сообщение отправлено пользователю " + client_msg["to"]
         }
+        print("Сообщение от %s: %s" % (client_msg["from"], client_msg["message"]))
     msg = json.dumps(json_resp)
-    client.send(msg.encode('utf-8'))
-    client.close()
+    return msg
 
 
 def read_requests(r_clients, all_clients):
     # Чтение запросов из списка клиентов
     # может быть сообщение о входе в чат (presense)
     # или текстовое сообщение всем в чате
-    requests = {}      # Словарь запросов от клиентов  вида {сокет: запрос}
+    # на прочитанное сообщение формируем ответ и сохраняем в списке
+    requests = {}      # Список запросов от клиентов  вида {сокет: запрос}
+    responses = {}     # Список ответов вида {сокет: запрос}
     for sock in r_clients:
         try:
-            data = sock.recv(1024).decode('ascii')
+            data = sock.recv(1024).decode('utf-8')
             requests[sock] = data
-            print("sock = ", sock)
-            print("requests[sock] = ", requests[sock])
+            responses[sock] = server_response(data)
         except:
             print('Клиент {} {} отключился'.format(sock.fileno(), sock.getpeername()))
             all_clients.remove(sock)
-    return requests
+    return requests, responses
 
 
-def write_responses(requests, w_clients, all_clients):
+def write_responses(responses, w_clients, all_clients):
     # ответ сервера клиентам, от которых были запросы
     for sock in w_clients:
-        if sock in requests:
+        if sock in responses:
             try:
                 # Подготовить и отправить ответ сервера
-                resp = requests[sock].encode('ascii')
-                # Эхо-ответ сделаем чуть непохожим на оригинал
-                test_len = sock.send(resp.upper())
+                resp = responses[sock].encode('utf-8')
+                # рассылаем сообщения всем клиентам
+                for client in all_clients:
+                    client.sendall(resp)
             except:                 # Сокет недоступен, клиент отключился
                 print('Клиент {} {} отключился'.format(sock.fileno(), sock.getpeername()))
                 sock.close()
@@ -122,10 +121,8 @@ def mainloop():
     s = socket(AF_INET, SOCK_STREAM)
     s.bind(('', port))
     s.listen(5)
-    s.settimeout(0.2)  # Таймаут для операций с сокетом
+    s.settimeout(1)  # Таймаут для операций с сокетом
     serv_log.info("Запущено прослушивание порта %s" % str(port))
-    # while True:
-    #     server_communicate(s)
     while True:
         try:
             conn, addr = s.accept()  # Проверка подключений
@@ -143,9 +140,8 @@ def mainloop():
                 r, w, e = select.select(clients, clients, [], wait)
             except:
                 pass  # Ничего не делать, если какой-то клиент отключился
-
-            requests = read_requests(r, clients)  # Сохраним запросы клиентов
-            write_responses(requests, w, clients)  # Выполним отправку ответов клиентам
+            requests, responses = read_requests(r, clients)  # Сохраним запросы клиентов
+            write_responses(responses, w, clients)  # Выполним отправку ответов клиентам
 
 
 # Entry point
